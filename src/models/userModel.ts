@@ -8,7 +8,22 @@ class UserModel {
    * Gets all the users from database
    */
   public static async getAllUsers() {
-    const users = await db(UserModel.table).select("id", "name", "email");
+    const users = await db(UserModel.table).select(
+      "id",
+      "first_name",
+      "last_name",
+      "email",
+      "ethnicity",
+      "gender",
+      "birth_date",
+      "province",
+      "district",
+      "street",
+      "insurance_id",
+      "insurance_provider",
+      "member_id",
+      "document"
+    );
 
     return users;
   }
@@ -40,8 +55,19 @@ class UserModel {
   public static async createUser(user: UserToCreate) {
     const newUser = await db(UserModel.table).insert(user, [
       "id",
-      "name",
+      "first_name",
+      "last_name",
       "email",
+      "ethnicity",
+      "gender",
+      "birth_date",
+      "province",
+      "district",
+      "street",
+      "insurance_id",
+      "insurance_provider",
+      "member_id",
+      "document",
     ]);
 
     return newUser;

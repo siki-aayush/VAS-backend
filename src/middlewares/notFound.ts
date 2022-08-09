@@ -1,6 +1,6 @@
-import CustomError from "../misc/CustomError"
+import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { Request, Response, NextFunction } from "express"
+import CustomError from "../misc/CustomError";
 /**
  * Middleware to handle the invalid routes
  * @param  {Request} req
@@ -8,6 +8,9 @@ import { Request, Response, NextFunction } from "express"
  * @param  {NextFunction} next
  */
 export const notFound = (req: Request, res: Response, next: NextFunction) => {
-  const error = new CustomError(`Not Found - ${req.originalUrl}`, StatusCodes.NOT_FOUND);
+  const error = new CustomError(
+    `Not Found - ${req.originalUrl}`,
+    StatusCodes.NOT_FOUND
+  );
   next(error);
-}
+};

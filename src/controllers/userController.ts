@@ -1,7 +1,11 @@
-import { NextFunction, Request, Response } from "express";
-import * as userService from "../services/userService";
 import bcrypt from "bcrypt";
+import { NextFunction, Request, Response } from "express";
+import fs from "fs";
+import { StatusCodes } from "http-status-codes";
+import path from "path";
 import { SALT_ROUNDS } from "../constants/common";
+import CustomError from "../misc/CustomError";
+import * as userService from "../services/userService";
 
 /**
  * Gets all the users
@@ -63,14 +67,34 @@ export const getUserByEmail = (
  * @param  {Response} res
  * @param  {NextFunction} next
  */
-export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, email, password } = req.body;
-  bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
-    userService
-      .createUser({ name, email, password: hash })
-      .then((data) => res.json(data))
-      .catch((error) => next(error));
-  });
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { password } = req.body;
+
+  if (req.file) {
+    // Gnerates the file name with the current date and time
+    const img = req.file.buffer.toString("base64");
+    const fileName = Date.now() + "." + req.file?.originalname.split(".")[1];
+    const filePath = path.join(__dirname, "../../uploads", fileName);
+
+    // Saves the files to the uploads folder
+    fs.writeFileSync(filePath, img, "base64");
+
+    // Generates a hash for the password
+    bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
+      userService
+        .createUser({ ...req.body, password: hash, document: filePath })
+        .then((data) => res.json(data))
+        .catch((error) => next(error));
+    });
+  } else {
+    next(
+      new CustomError("No file uploaded", StatusCodes.UNSUPPORTED_MEDIA_TYPE)
+    );
+  }
 };
 
 /**
@@ -80,11 +104,11 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
  * @param  {NextFunction} next
  */
 export const updateUser = (req: Request, res: Response, next: NextFunction) => {
-  const { id, name, email, password } = req.body;
+  const { id, password } = req.body;
 
   bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
     userService
-      .updateUser({ name, email, password: hash, id: +id })
+      .updateUser({ ...req.body, password: hash, id: +id })
       .then((data) => res.json(data))
       .catch((error) => next(error));
   });

@@ -1,10 +1,11 @@
+import bcrypt from "bcrypt";
+import fs from "fs";
+import jwt from "jsonwebtoken";
 import Succes from "../domain/Success";
+import { Token } from "../domain/Token";
 import User, { UserToCreate } from "../domain/User";
 import logger from "../misc/logger";
 import UserModel from "../models/userModel";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { Token } from "../domain/Token";
 
 /**
  * Gets all the users
@@ -13,6 +14,8 @@ import { Token } from "../domain/Token";
 export const getAllUsers = async (): Promise<Succes<User>> => {
   logger.info("Getting all users!!");
   const users = await UserModel.getAllUsers();
+  const img = fs.readFileSync(users[0].document, "base64");
+  users[0].document = img;
 
   return {
     data: users,
@@ -57,12 +60,21 @@ export const getUserByEmail = async (email: string): Promise<Succes<User>> => {
  */
 export const createUser = async (user: UserToCreate): Promise<Succes<User>> => {
   logger.info("Creating user!!");
-  const newUser = await UserModel.createUser(user);
+  logger.info(JSON.stringify(user));
+  try {
+    const newUser = await UserModel.createUser(user);
 
-  return {
-    data: newUser,
-    message: "Successfully created user",
-  };
+    return {
+      data: newUser,
+      message: "Successfully created user",
+    };
+  } catch (err) {
+    logger.info(err);
+
+    return {
+      message: "Failed creating a new user",
+    };
+  }
 };
 
 /**

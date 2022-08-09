@@ -1,7 +1,18 @@
 interface User {
   id: number;
-  name: string;
+  first_name: string;
+  last_name: string;
+  ethnicty: string;
+  gender: string;
   email: string;
+  date: string;
+  province: string;
+  district: string;
+  street: string;
+  insurance_id: string;
+  insurance_provider: string;
+  member_id: string;
+  document: any;
   password: string;
 }
 
